@@ -2,8 +2,11 @@ import pandas as pd
 import numpy as np
 
 class DataEngineering():
-    def __init__(self, filename):
-        self.dataset = self.load_dataset(filename)
+    def __init__(self, data):
+        if isinstance(data, pd.DataFrame):
+            self.dataset = data
+        elif data[:-4] == '.csv':
+            self.dataset = self.load_dataset(data)
 
     def load_dataset(self, filename):
         return pd.read_csv(filename)
@@ -32,7 +35,7 @@ class DataEngineering():
     def remove_duplicates(self):
         self.dataframe = self.dataset.drop_duplicates()
 
-    def standardize_dates(self, column_names):
+    def standardize_dates(self, column_names='trans_date_trans_time'):
         self.dataset[column_names] = pd.to_datetime(self.dataset[column_names])
 
     def trim_spaces(self, column_name):
@@ -45,7 +48,7 @@ class DataEngineering():
             if self.dataset[column_name].dtype != 'datetime64[ns]':
                 self.dataset[column_name] = pd.to_datetime(self.dataset[column_name])
 
-    def expand_dates(self, column_name):
+    def expand_dates(self, column_name='trans_date_trans_time'):
         self.dataset[column_name] = pd.to_datetime(self.dataset[column_name])
         self.dataset['day_of_week'] = self.dataset[column_name].dt.dayofweek
         self.dataset['hour_of_day'] = self.dataset[column_name].dt.hour
@@ -146,3 +149,10 @@ class DataEngineering():
             return True
         else:
             return False
+        
+    def clean_data(self):
+        self.clean_missing_values()
+        self.remove_duplicates()
+        self.standardize_dates()
+        self.expand_dates()
+        return self.dataset
